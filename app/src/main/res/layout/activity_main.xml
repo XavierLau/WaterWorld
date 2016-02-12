@@ -11,5 +11,5 @@
         android:id="@+id/button7"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:onClick="changeActivity"/>
+        android:onClick="displayWorldActivity"/>
 </RelativeLayout>

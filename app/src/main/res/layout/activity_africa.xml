@@ -29,7 +29,8 @@
             android:text="Rwanda"
             android:id="@+id/button9"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Rwanda"/>
     </TableRow>
 
     <TableRow
@@ -42,7 +43,8 @@
             android:text="Egypt"
             android:id="@+id/button10"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Egypt" />
     </TableRow>
 
     <TableRow
@@ -55,7 +57,8 @@
             android:text="South Africa"
             android:id="@+id/button11"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="South Africa" />
     </TableRow>
 
     <TableRow
@@ -68,7 +71,8 @@
             android:text="Ghana"
             android:id="@+id/button12"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Ghana" />
     </TableRow>
 
     <TableRow
@@ -81,7 +85,8 @@
             android:text="Libya"
             android:id="@+id/button13"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Libya" />
     </TableRow>
 
     <TableRow
@@ -94,7 +99,8 @@
             android:text="Nigeria"
             android:id="@+id/button14"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Nigeria" />
     </TableRow>
 
     <TableRow
@@ -107,7 +113,8 @@
             android:text="Swaziland"
             android:id="@+id/button15"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Swaziland" />
     </TableRow>
 
     <TableRow
@@ -120,7 +127,8 @@
             android:text="Zimbabwe"
             android:id="@+id/button16"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Zimbabwe" />
     </TableRow>
 
     <TableRow
@@ -133,6 +141,7 @@
             android:text="Algeria"
             android:id="@+id/button17"
             android:onClick="viewCountryInfo"
-            android:layout_column="0" />
+            android:layout_column="0"
+            android:tag="Algeria" />
     </TableRow>
 </TableLayout>
