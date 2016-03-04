@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.ViewOverlay;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -29,13 +30,19 @@ public class AfricaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_africa);
     }
 
-    public void buttonExitOverlay(View currentButton){
+    public void buttonExitOverlay(){
 
     }
 
     public void viewCountryInfo(final View view){
 
-        View parent = (View)view.getParent().getParent();
+        PopupMenu pop = new PopupMenu(getApplicationContext(), (View)view.getParent().getParent());
+
+        pop.show();
+
+
+
+        /*View parent = (View)view.getParent().getParent();
 
         //Log.d(Integer.toString(parent.getMeasuredWidth()), "Parent Width");
         //Log.d(Integer.toString(parent.getMeasuredHeight()), "Parent Height");
@@ -80,7 +87,7 @@ public class AfricaActivity extends AppCompatActivity {
 
         countryTitle.setTextSize(40);
 
-        /*
+
         for(int i=0; i<((ViewGroup)parent).getChildCount(); ++i) {
             View child = ((ViewGroup)parent).getChildAt(i);
             child.setEnabled(false);
