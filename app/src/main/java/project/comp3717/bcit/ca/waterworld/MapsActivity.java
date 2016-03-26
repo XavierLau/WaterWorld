@@ -4,8 +4,14 @@ import android.content.ContentValues;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import project.comp3717.bcit.ca.waterworld.ContinentContract.ContinentEntry;
 import project.comp3717.bcit.ca.waterworld.CountryContract.CountryEntry;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -16,20 +22,23 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 {
-    private DataDBHelper                dataDBHelper;
-    private ArrayList<String> continentNames;
-    private GoogleMap mMap;
+    private DataDBHelper       dataDBHelper;
+    private GoogleMap          mMap;
+    private final OkHttpClient client = new OkHttpClient();
+    private String continent;
+    private String country;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         final Resources                 res;
-        //final String[]                  continents;
-        //final String[]                  countries;
         final SQLiteDatabase            dbWrite;
         final SQLiteDatabase            dbRead;
         final ContentValues             values;
@@ -47,9 +56,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         dbWrite                         = dataDBHelper.getWritableDatabase();
         dbRead                          = dataDBHelper.getReadableDatabase();
         res                             = getResources();
-        //countries                       = res.getStringArray(R.array.countries);         //change this when we get countries
-        //continents                      = res.getStringArray(R.array.continents);        //change this when we get continents
-        continentNames                  = new ArrayList<String>(7);
+
+        // Execute database retrieval. Parameter is continent you want to look in.
+        new GetCountryASync(dbWrite).execute("CountryListNA");
+
+
+        // ---- Start Old Code ----
 
         /*
         // inserting data into country table
@@ -97,8 +109,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         cursor.close();
         */
-    }
 
+        // ---- End Old Code ----
+    }
 
     /**
      * Manipulates the map once available.
@@ -113,5 +126,80 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap)
     {
         mMap = googleMap;
+    }
+
+    public class GetCountryASync extends AsyncTask<String, Void, String>
+    {
+        private Exception exception;
+        private SQLiteDatabase database;
+
+        GetCountryASync(final SQLiteDatabase db)
+        {
+            database = db;
+        }
+
+        protected String doInBackground(String... arg0)
+        {
+            try
+            {
+                // Build the query string.
+                QueryBuilder query = new QueryBuilder();
+
+                Request request = new Request.Builder()
+                        .url(query.getBaseURL() + arg0[0] + query.getAPIKeyURLExtension())
+                        .build();
+
+                // Executes REST call, get JSON data.
+                Response response = client.newCall(request).execute();
+
+                return response.body().string();
+            }
+            catch(Exception ex)
+            {
+                Log.d("GetCountryASync Error", ex.getMessage());
+                ex.printStackTrace();
+                return (null);
+            }
+        }
+
+        protected void onPostExecute(final String data)
+        {
+            final JSONArray array;
+
+            Log.d("All JSON Data", data);
+
+            try
+            {
+                array = new JSONArray(data);
+
+                String countryID;
+                String countryName;
+                int    countryRating;
+                String countryDesc;
+                JSONObject object;
+
+                // For all countries returned...
+                for(int i = 0; i < array.length() ; i++)
+                {
+                    object = array.getJSONObject(i);
+
+                    // If country name is equal to desired country name
+                    if(object.getString("_id").equals("CANADA"))  /* ----- Need to not hardcode. Change when we can click. ---- */
+                    {
+                        countryName   = object.getString("countryname");
+                        countryRating = Integer.parseInt(object.getString("countryrating"));
+                        countryDesc   = object.getString("countrydesc");
+
+                        Log.d("Required Country Info", countryName + ' ' + countryRating + ' ' + countryDesc);
+                        break;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.d("onPostExecute Error", ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
     }
 }
