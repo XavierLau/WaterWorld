@@ -1,6 +1,7 @@
 package project.comp3717.bcit.ca.waterworld;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -27,6 +28,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+/**
+ * Created by Xavier Lau, Chiseong Oh and Connor Phalen on 2016-03-26.
+ */
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 {
     private DataDBHelper       dataDBHelper;
@@ -156,7 +160,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             catch(Exception ex)
             {
-                Log.d("GetCountryASync Error", ex.getMessage());
+                Log.d("GetCountry Error", ex.getMessage() + "\nCountry Could not be retrieved.");
                 ex.printStackTrace();
                 return (null);
             }
@@ -164,17 +168,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         protected void onPostExecute(final String data)
         {
-            final JSONArray array;
+            if(data == null)
+            {
+                return;
+            }
 
+            final JSONArray array;
             Log.d("All JSON Data", data);
 
             try
             {
+                // Assign retrieved data into a JSON Array
                 array = new JSONArray(data);
 
                 String countryID;
                 String countryName;
-                int    countryRating;
+                String    countryRating;
                 String countryDesc;
                 JSONObject object;
 
@@ -187,10 +196,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if(object.getString("_id").equals("CANADA"))  /* ----- Need to not hardcode. Change when we can click. ---- */
                     {
                         countryName   = object.getString("countryname");
-                        countryRating = Integer.parseInt(object.getString("countryrating"));
                         countryDesc   = object.getString("countrydesc");
+                        countryRating = object.getString("countryrating");
 
-                        Log.d("Required Country Info", countryName + ' ' + countryRating + ' ' + countryDesc);
+                        Bundle countryBundle = new Bundle();
+
+                        countryBundle.putString("COUNTRY_NAME", countryName);
+                        countryBundle.putString("COUNTRY_DESC", countryDesc);
+                        countryBundle.putString("COUNTRY_RATING", countryRating);
+
+                        Intent intent = new Intent(getApplicationContext(), Pop.class);
+
+                        intent.putExtras(countryBundle);
+                        startActivity(intent);
+
                         break;
                     }
                 }

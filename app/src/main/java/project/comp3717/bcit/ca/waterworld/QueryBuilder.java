@@ -1,7 +1,5 @@
 package project.comp3717.bcit.ca.waterworld;
 
-import project.comp3717.bcit.ca.waterworld.ConnectionTest;
-
 /**
  * Created by Connor Phalen on 25/03/2016.
  */
