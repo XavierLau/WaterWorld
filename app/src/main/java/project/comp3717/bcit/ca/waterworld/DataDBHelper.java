@@ -12,7 +12,7 @@ import project.comp3717.bcit.ca.waterworld.CountryContract.CountryEntry;
 public class DataDBHelper
         extends SQLiteOpenHelper
 {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "Data.db";
 
     private static final String TEXT_TYPE = " TEXT";

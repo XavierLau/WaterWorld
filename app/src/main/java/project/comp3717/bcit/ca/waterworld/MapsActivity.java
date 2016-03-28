@@ -1,6 +1,7 @@
 package project.comp3717.bcit.ca.waterworld;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -8,16 +9,18 @@ import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
-
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import project.comp3717.bcit.ca.waterworld.ContinentContract.ContinentEntry;
+import project.comp3717.bcit.ca.waterworld.CountryContract.CountryEntry;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.maps.android.geojson.GeoJsonLayer;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,23 +31,27 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+/**
+ * Created by Xavier Lau, Chiseong Oh and Connor Phalen on 2016-03-26.
+ */
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 {
-    private DataDBHelper                dataDBHelper;
-    private ArrayList<String> continentNames;
-    private GoogleMap googleMap;
-    private final String ftCountryAPIKey = "AIzaSyAm3E9BguE5FWR8IGPaj3YT0XowwRYa4Rk";
-    private final String ftCountryDataURL = "https://www.googleapis.com/fusiontables/v2/query?sql="
-                                            + "SELECT%20*%20FROM%201Olm63OBLeyofjNSThCCLnxRgXJV0g3"
-                                            + "0iQK-J5tKu&key=";
-    private final ArrayList<GeoJsonLayer> geoJsonLayerArrayList = new ArrayList<GeoJsonLayer>();
+    private String                          continent;
+    private String                          country;
+    private DataDBHelper                    dataDBHelper;
+    private ArrayList<String>               continentNames;
+    private GoogleMap                       googleMap;
+    private final String                    ftCountryAPIKey         = "AIzaSyAm3E9BguE5FWR8IGPaj3YT0XowwRYa4Rk";
+    private final String                    ftCountryDataURL        = "https://www.googleapis.com/fusiontables/v2/query?sql="
+                                                                        + "SELECT%20*%20FROM%201Olm63OBLeyofjNSThCCLnxRgXJV0g3"
+                                                                        + "0iQK-J5tKu&key=";
+    private final ArrayList<GeoJsonLayer>   geoJsonLayerArrayList   = new ArrayList<GeoJsonLayer>();
+    private final OkHttpClient              client                  = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         final Resources                 res;
-        //final String[]                  continents;
-        //final String[]                  countries;
         final SQLiteDatabase            dbWrite;
         final SQLiteDatabase            dbRead;
         final ContentValues             values;
@@ -66,55 +73,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //continents                      = res.getStringArray(R.array.continents);        //change this when we get continents
         continentNames                  = new ArrayList<String>();
 
-        /*
-        // inserting data into country table
-        for (final String country : countries)
-        {
-            long newRowId;
-
-            values.put(CountryEntry.COLUMN_NAME_NAME, country);
-            values.putNull(CountryEntry.COLUMN_NAME_RATING);
-            values.putNull(CountryEntry.COLUMN_NAME_DESCRIPTION);
-            newRowId = dbWrite.insert(CountryEntry.TABLE_NAME,
-                                      null,
-                                      values);
-        }
-
-        values.clear();
-
-        // inserting data into continent table
-        for (final String continent : continents)
-        {
-            long newRowId;
-
-            values.put(ContinentEntry.COLUMN_NAME_NAME, continent);
-            newRowId = dbWrite.insert(ContinentEntry.TABLE_NAME,
-                                      null,
-                                      values);
-        }
-
-        // getting names of all the continents and putting them into the cursor
-        cursor = dbRead.query(ContinentEntry.TABLE_NAME,
-                              new String[]{ContinentEntry.COLUMN_NAME_NAME},
-                              null,
-                              null,
-                              null,
-                              null,
-                              null);
-
-        // moving through the cursor to get all the continents then adding them to the continent names arraylist
-        while (cursor.moveToNext())
-        {
-            continentNames.add(cursor.getString(
-                    cursor.getColumnIndex(
-                            ContinentEntry.COLUMN_NAME_NAME.toString()
-                    )));
-        }
-        cursor.close();
-        */
-
+        // Execute database retrieval. Parameter is continent you want to look in.
+        new GetCountryASync(dbWrite).execute("CountryListNA");
     }
-
 
     /**
      * Manipulates the map once available.
@@ -128,75 +89,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap)
     {
-        final RetrieveCountryData retrieveCountryData;
-
         this.googleMap = googleMap;
-        retrieveCountryData = new RetrieveCountryData();
-        retrieveCountryData.execute(ftCountryDataURL + ftCountryAPIKey);
-
-        /*InputStream stream = getResources().openRawResource(R.raw.test);
-
-        String line;
-        StringBuilder result = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-
-        try
-        {
-            while ((line = reader.readLine()) != null) {
-                // Read and save each line of the stream
-                result.append(line);
-            }
-            // Close the stream
-            reader.close();
-            stream.close();
-            JSONObject jsonObject = new JSONObject(result.toString());
-            JSONArray rows;
-            rows = jsonObject.getJSONArray("rows");
-            JSONArray countries;
-            countries = rows.getJSONArray(0);
-
-            Log.d("json", countries.getString(1));
-            geoJsonLayer = new GeoJsonLayer(this.googleMap, new JSONObject(countries.getString(1)));
-            geoJsonLayer.addLayerToMap();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }*/
-
-        /*try {
-            geoJsonLayer = new GeoJsonLayer(googleMap, R.raw.test, getApplicationContext());
-            geoJsonLayer.addLayerToMap();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e)
-        {
-            e.printStackTrace();
-        }*/
+        //grabs the polygon data and draws the polygons as layers on the map
+        new RetrieveCountryData().execute(ftCountryDataURL + ftCountryAPIKey);
     }
 
+    /**
+     * Makes a REST call to the fusion table were the country boundry points are stored. Response
+     * will return a JSON object. Parse the JSON object to create GeoJSON layers on the map.
+     */
     private class RetrieveCountryData extends AsyncTask<String, Void, JSONObject>
     {
         @Override
         protected JSONObject doInBackground(String... params)
         {
-            final URL url;
+            final URL               url;
             final HttpURLConnection httpURLConnection;
-            final JSONObject jsonObject;
-            final InputStream inputStream;
-            String line;
-            StringBuilder result = new StringBuilder();
-            BufferedReader bufferedReader;
+            final InputStream       inputStream;
+            String                  line;
+            BufferedReader          bufferedReader;
+            StringBuilder           result              = new StringBuilder();
 
             try
             {
-                url = new URL(params[0]);
-                httpURLConnection = (HttpURLConnection) url.openConnection();
-                inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
-                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                url                 = new URL(params[0]);
+                httpURLConnection   = (HttpURLConnection) url.openConnection();
+                inputStream         = new BufferedInputStream(httpURLConnection.getInputStream());
+                bufferedReader      = new BufferedReader(new InputStreamReader(inputStream));
 
                 while ((line = bufferedReader.readLine()) != null) {
                     result.append(line);
@@ -204,7 +123,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 bufferedReader.close();
                 inputStream.close();
-                Log.d("json", result.toString());
                 return new JSONObject(result.toString());
             }
             catch (MalformedURLException e)
@@ -222,12 +140,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return null;
         }
 
+        @Override
         protected void onPostExecute(JSONObject jsonObject) {
-            GeoJsonLayer geoJsonLayer;
-            JSONArray rowJSONArray;
-            JSONArray countryJSONArray;
-            JSONObject countryJSONObject;
-            String countryName;
+            GeoJsonLayer    geoJsonLayer;
+            JSONArray       rowJSONArray;
+            JSONArray       countryJSONArray;
+            JSONObject      countryJSONObject;
+            String          countryName;
 
             try
             {
@@ -236,16 +155,107 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     rowJSONArray = jsonObject.getJSONArray("rows");
 
                     for (int i = 0; i < rowJSONArray.length(); i++) {
-                        countryJSONArray = rowJSONArray.getJSONArray(i);
-                        countryJSONObject = new JSONObject(countryJSONArray.getString(1));
-                        geoJsonLayer = new GeoJsonLayer(googleMap, countryJSONObject);
+                        countryJSONArray    = rowJSONArray.getJSONArray(i);
+                        countryJSONObject   = new JSONObject(countryJSONArray.getString(1));
+                        geoJsonLayer        = new GeoJsonLayer(googleMap, countryJSONObject);
                         geoJsonLayerArrayList.add(geoJsonLayer);
                         geoJsonLayer.addLayerToMap();
                     }
                 }
-            } catch (JSONException e)
+            }
+            catch (JSONException e)
             {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private class GetCountryASync extends AsyncTask<String, Void, String>
+    {
+        private Exception exception;
+        private SQLiteDatabase database;
+
+        GetCountryASync(final SQLiteDatabase db)
+        {
+            database = db;
+        }
+
+        protected String doInBackground(String... arg0)
+        {
+            try
+            {
+                // Build the query string.
+                QueryBuilder query = new QueryBuilder();
+
+                Request request = new Request.Builder()
+                        .url(query.getBaseURL() + arg0[0] + query.getAPIKeyURLExtension())
+                        .build();
+
+                // Executes REST call, get JSON data.
+                Response response = client.newCall(request).execute();
+
+                return response.body().string();
+            }
+            catch(Exception ex)
+            {
+                Log.d("GetCountry Error", ex.getMessage() + "\nCountry Could not be retrieved.");
+                ex.printStackTrace();
+                return (null);
+            }
+        }
+
+        protected void onPostExecute(final String data)
+        {
+            if(data == null)
+            {
+                return;
+            }
+
+            final JSONArray array;
+            Log.d("All JSON Data", data);
+
+            try
+            {
+                // Assign retrieved data into a JSON Array
+                array = new JSONArray(data);
+
+                String countryID;
+                String countryName;
+                String    countryRating;
+                String countryDesc;
+                JSONObject object;
+
+                // For all countries returned...
+                for(int i = 0; i < array.length() ; i++)
+                {
+                    object = array.getJSONObject(i);
+
+                    // If country name is equal to desired country name
+                    if(object.getString("_id").equals("CANADA"))  /* ----- Need to not hardcode. Change when we can click. ---- */
+                    {
+                        countryName   = object.getString("countryname");
+                        countryDesc   = object.getString("countrydesc");
+                        countryRating = object.getString("countryrating");
+
+                        Bundle countryBundle = new Bundle();
+
+                        countryBundle.putString("COUNTRY_NAME", countryName);
+                        countryBundle.putString("COUNTRY_DESC", countryDesc);
+                        countryBundle.putString("COUNTRY_RATING", countryRating);
+
+                        Intent intent = new Intent(getApplicationContext(), Pop.class);
+
+                        intent.putExtras(countryBundle);
+                        startActivity(intent);
+
+                        break;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.d("onPostExecute Error", ex.getMessage());
+                ex.printStackTrace();
             }
         }
     }
